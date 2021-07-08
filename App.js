@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
-import { StyleSheet, Text, View, Button, FlatList, Linking } from 'react-native';
+import { Vibration, StyleSheet, Text, View, TouchableOpacity, FlatList, Linking } from 'react-native';
 import * as Contacts from 'expo-contacts';
+import { call } from 'function-bind';
 
 
 export default function App() {
@@ -12,16 +13,34 @@ export default function App() {
       const {status} = await Contacts.requestPermissionsAsync();
       if(status === 'granted') {
         const contactsData = await Contacts.getContactsAsync();
-        console.log(contactsData);
+        setContacts(contactsData.data);
+        Vibration.vibrate([100,200,100])
       }
     }
     getContacts()
 
   }, [])
 
+  function call(person) {
+      const phoneNumber = person.phoneNumbers[0].digits;
+      const link = `tel:${phoneNumber}`;
+      Linking.canOpenURL(link)
+        .then(supported => Linking.openURL(link))
+        .catch(console.error);
+  }
+
   return (
     <View style={styles.container}>
-      <Text>hello</Text>
+      <Text>Contacts</Text>
+      <FlatList
+        data={contacts}
+        keyExtractor={ (item) => item.id }
+        renderItem={ ({item}) => 
+          <TouchableOpacity style={styles.buttons} onPress={() => call(item)}>
+                <Text> {item.name} </Text> 
+          </TouchableOpacity>  
+        } 
+      />
     </View>
   );
 }
@@ -29,8 +48,18 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
+    backgroundColor: '#eee',
+    alignItems: 'flex-start',
     justifyContent: 'center',
+    paddingTop: 80,
+    // paddingLeft: 25
   },
+  buttons: {
+    // textAlign: 'left',
+    // border: '1px solid',
+    alignItems: 'center',
+    backgroundColor: '#F5B041',
+    margin: 10,
+    padding: 3
+  }
 });
