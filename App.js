@@ -1,65 +1,52 @@
-import React, {useEffect, useState} from 'react';
-import { Vibration, StyleSheet, Text, View, TouchableOpacity, FlatList, Linking } from 'react-native';
-import * as Contacts from 'expo-contacts';
-import { call } from 'function-bind';
+import * as React from 'react';
+import * as Battery from 'expo-battery';
+import { StyleSheet, Text, View } from 'react-native';
 
+export default class App extends React.Component {
+  state = {
+    batteryLevel: null,
+    batteryState: null
+  };
 
-export default function App() {
-
-  const [contacts, setContacts] = useState([]);
-
-  useEffect(() => {
-    const getContacts = async () => {
-      const {status} = await Contacts.requestPermissionsAsync();
-      if(status === 'granted') {
-        const contactsData = await Contacts.getContactsAsync();
-        setContacts(contactsData.data);
-        Vibration.vibrate([100,200,100])
-      }
-    }
-    getContacts()
-
-  }, [])
-
-  function call(person) {
-      const phoneNumber = person.phoneNumbers[0].digits;
-      const link = `tel:${phoneNumber}`;
-      Linking.canOpenURL(link)
-        .then(supported => Linking.openURL(link))
-        .catch(console.error);
+  componentDidMount() {
+    this._subscribe();
   }
 
-  return (
-    <View style={styles.container}>
-      <Text>Contacts</Text>
-      <FlatList
-        data={contacts}
-        keyExtractor={ (item) => item.id }
-        renderItem={ ({item}) => 
-          <TouchableOpacity style={styles.buttons} onPress={() => call(item)}>
-                <Text> {item.name} </Text> 
-          </TouchableOpacity>  
-        } 
-      />
-    </View>
-  );
+  componentWillUnmount() {
+    this._unsubscribe();
+  }
+
+ async _subscribe() {
+    const batteryState = await Battery.getBatteryStateAsync();
+    console.log(batteryState);
+    this.setState({ batteryState });
+    this._subscription = Battery.addBatteryStateListener(({ batteryState }) => {
+      this.setState({ batteryState });
+      console.log('battery is charging !', batteryState);
+    });
+  }
+
+
+
+  _unsubscribe() {
+    this._subscription && this._subscription.remove();
+    this._subscription = null;
+  }
+
+  render() {
+    return (
+      <View style={styles.container}>
+        <Text>Current Battery State: {this.state.batteryState}</Text>
+      </View>
+    );
+  }
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#eee',
-    alignItems: 'flex-start',
-    justifyContent: 'center',
-    paddingTop: 80,
-    // paddingLeft: 25
-  },
-  buttons: {
-    // textAlign: 'left',
-    // border: '1px solid',
+    marginTop: 15,
     alignItems: 'center',
-    backgroundColor: '#F5B041',
-    margin: 10,
-    padding: 3
-  }
+    justifyContent: 'center',
+  },
 });
