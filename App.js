@@ -1,12 +1,27 @@
-import { StatusBar } from 'expo-status-bar';
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import React, {useEffect, useState} from 'react';
+import { StyleSheet, Text, View, Button, FlatList, Linking } from 'react-native';
+import * as Contacts from 'expo-contacts';
+
 
 export default function App() {
+
+  const [contacts, setContacts] = useState([]);
+
+  useEffect(() => {
+    const getContacts = async () => {
+      const {status} = await Contacts.requestPermissionsAsync();
+      if(status === 'granted') {
+        const contactsData = await Contacts.getContactsAsync();
+        console.log(contactsData);
+      }
+    }
+    getContacts()
+
+  }, [])
+
   return (
     <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
+      <Text>hello</Text>
     </View>
   );
 }
