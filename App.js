@@ -1,12 +1,13 @@
 import * as React from 'react';
 import * as Battery from 'expo-battery';
 import { StyleSheet, Text, View } from 'react-native';
-// import {If, Then, Else} from 'react-if';
+import { Audio } from 'expo-av';
 
 export default class App extends React.Component {
   state = {
     batteryLevel: null,
-    batteryState: null
+    batteryState: null,
+    sound: null
   };
 
   componentDidMount() {
@@ -17,14 +18,30 @@ export default class App extends React.Component {
     this._unsubscribe();
   }
 
+  componentDidUpdate() {
+    if(this.state.batteryState === 2) {
+      this.playSound();
+    }
+  }
+
  async _subscribe() {
     const batteryState = await Battery.getBatteryStateAsync();
     console.log(batteryState);
     this.setState({ batteryState });
     this._subscription = Battery.addBatteryStateListener(({ batteryState }) => {
       this.setState({ batteryState });
-      console.log('battery is charging !', batteryState);
+      console.log('battery state: ', batteryState);
     });
+  }
+
+  async playSound() {
+    const { sound } = await Audio.Sound.createAsync(require('./assets/ES_ApplauseCrowdSFXProducer.mp3'));
+
+    await sound.playAsync();
+
+    setTimeout( async () => {
+      await sound.unloadAsync();
+  }, 2000)
   }
 
   _unsubscribe() {
@@ -32,15 +49,17 @@ export default class App extends React.Component {
     this._subscription = null;
   }
 
+  
+
+
   render() {
     return (
-
       <View style={styles.container}>
 
         {
           this.state.batteryState===1 
-            ? <Text style={styles.notCharged}>Current Battery State: {this.state.batteryState}</Text> 
-            : <Text style={styles.charged}>Current Battery State: {this.state.batteryState}</Text>
+            ? <Text style={styles.notCharged}>CHARGE ME FOR CLAPS</Text> 
+            : <Text style={styles.charged}>RECEIVE THE CLAPS</Text>
         }
 
       </View>
@@ -58,11 +77,13 @@ const styles = StyleSheet.create({
   },
 
   charged: {
-    backgroundColor: '#4AF40F'
+    backgroundColor: '#4AF40F',
+    padding: 60
   },
 
   notCharged: {
-    backgroundColor: '#F44F25'
+    backgroundColor: '#F44F25',
+    padding: 60
   }
 
 
