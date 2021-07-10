@@ -2,12 +2,15 @@ import * as React from 'react';
 import * as Battery from 'expo-battery';
 import { StyleSheet, Text, View } from 'react-native';
 import { Audio } from 'expo-av';
+// import { useFonts, Inter_900Black } from '@expo-google-fonts/inter';
+// import {AppLoading} from 'expo-app-loading'
+
+import {Font} from 'expo';
 
 export default class App extends React.Component {
+  
   state = {
-    batteryLevel: null,
     batteryState: null,
-    sound: null
   };
 
   componentDidMount() {
@@ -39,9 +42,9 @@ export default class App extends React.Component {
 
     await sound.playAsync();
 
-    setTimeout( async () => {
-      await sound.unloadAsync();
-  }, 2000)
+  //   setTimeout( async () => {
+  //     await sound.unloadAsync();
+  // }, 2000)
   }
 
   _unsubscribe() {
@@ -49,20 +52,17 @@ export default class App extends React.Component {
     this._subscription = null;
   }
 
-  
-
-
   render() {
     return (
-      <View style={styles.container}>
 
+      <View style={styles.container}>
         {
           this.state.batteryState===1 
             ? <Text style={styles.notCharged}>CHARGE ME FOR CLAPS</Text> 
-            : <Text style={styles.charged}>RECEIVE THE CLAPS</Text>
+            : <Text style={styles.charged}>GOOD JOB, NOW DRINK SOME WATER</Text>
         }
-
       </View>
+
     );
   }
 }
@@ -78,12 +78,12 @@ const styles = StyleSheet.create({
 
   charged: {
     backgroundColor: '#4AF40F',
-    padding: 60
+    padding: 60,
   },
 
   notCharged: {
     backgroundColor: '#F44F25',
-    padding: 60
+    padding: 60,
   }
 
 
